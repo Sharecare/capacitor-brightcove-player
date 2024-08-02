@@ -72,8 +72,5 @@
   },
   "bugs": {
     "url": "https://github.com/jnesislabs/capacitor-brightcove-player/issues"
-  },
-  "dependencies": {
-    "capacitor-brightcove-player": "github:Sharecare/capacitor-brightcove-player#82081b5c045398ba9207e2e9b6abc06d67fba5db"
   }
 }
