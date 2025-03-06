@@ -439,7 +439,7 @@ class AudioService : Service() {
             val url = getTags(player)?.imageUri?.toURL()
             @Suppress("DEPRECATION")
             val executor = Executors.newSingleThreadExecutor()
-              executor.execute {
+            executor.execute {
                 val bitmap = BitmapRetriever().execute(url).get()
 
                 Handler(Looper.getMainLooper()).post {
