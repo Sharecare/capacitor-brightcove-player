@@ -46,6 +46,7 @@ import java.net.URI
 import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.Executors
 
 
 class AudioService : Service() {
@@ -433,12 +434,22 @@ class AudioService : Service() {
             return getTags(player)?.description ?: ""
         }
 
+
         override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
             val url = getTags(player)?.imageUri?.toURL()
             @Suppress("DEPRECATION")
-            callback.onBitmap(BitmapRetriever().execute(url).get())
-            return null
+            val executor = Executors.newSingleThreadExecutor()
+              executor.execute {
+                val bitmap = BitmapRetriever().execute(url).get() // Run in background thread
+
+                Handler(Looper.getMainLooper()).post {
+                    println("getCurrentLargeIcon->Calling callback");
+                    callback.onBitmap(bitmap)  // Update UI on the main thread
+                }
+          }
+           return null
         }
+
 
         private fun getTags(player: Player): MediaTags? {
             return player.currentMediaItem!!.localConfiguration!!.tag as MediaTags?
