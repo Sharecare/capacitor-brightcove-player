@@ -440,11 +440,10 @@ class AudioService : Service() {
             @Suppress("DEPRECATION")
             val executor = Executors.newSingleThreadExecutor()
               executor.execute {
-                val bitmap = BitmapRetriever().execute(url).get() // Run in background thread
+                val bitmap = BitmapRetriever().execute(url).get()
 
                 Handler(Looper.getMainLooper()).post {
-                    println("getCurrentLargeIcon->Calling callback");
-                    callback.onBitmap(bitmap)  // Update UI on the main thread
+                    callback.onBitmap(bitmap)
                 }
           }
            return null
