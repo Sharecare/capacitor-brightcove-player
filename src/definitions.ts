@@ -21,6 +21,27 @@ export enum AudioPlayerStatus {
   ENDED = "ENDED"
 }
 
+export enum AudioInterruptionType {
+  BEGAN = "began",
+  ENDED = "ended"
+}
+
+export enum AudioInterruptionReason {
+  DEFAULT = "default",                   // Phone call, Siri, other app audio
+  APP_WAS_SUSPENDED = "appWasSuspended", // System suspended app (Low Power Mode!)
+  BUILT_IN_MIC_MUTED = "builtInMicMuted",// Mic was muted
+  ROUTE_DISCONNECTED = "routeDisconnected", // Audio route disconnected (e.g., Bluetooth)
+  UNKNOWN = "unknown"
+}
+
+export interface AudioInterruptionInfo {
+  interruptionType: AudioInterruptionType;
+  reason: AudioInterruptionReason;
+  isLowPowerModeEnabled: boolean;
+  wasSuspended: boolean;
+  shouldResume?: boolean; // Only present when interruptionType is "ended"
+}
+
 export interface AudioPlayerState {
   state: AudioPlayerStatus,
   currentMillis?: number,

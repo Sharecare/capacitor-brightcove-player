@@ -341,10 +341,98 @@ public class BrightcovePlayer: CAPPlugin {
 
         NotificationCenter.default.addObserver(self, selector: #selector(self.notifyCustomListeners(notification:)), name: Notification.Name("audioStateChange"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.notifyCustomListeners(notification:)), name: Notification.Name("audioPositionChange"), object: nil)
+
+        // Audio interruption observer for tracking system interruptions (calls, Siri, Low Power Mode, etc.)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.handleAudioInterruption(notification:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
     }
 
     @objc private func notifyCustomListeners(notification: Notification) {
         self.notifyListeners(notification.name.rawValue, data: notification.userInfo as? [String: Any])
+    }
+
+    @objc private func handleAudioInterruption(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            print("Brightcove plugin: Audio interruption notification received but couldn't parse type")
+            return
+        }
+
+        let isLowPowerModeEnabled = ProcessInfo.processInfo.isLowPowerModeEnabled
+
+        var interruptionData: [String: Any] = [
+            "isLowPowerModeEnabled": isLowPowerModeEnabled
+        ]
+
+        switch type {
+        case .began:
+            print("Brightcove plugin: Audio interruption began")
+            interruptionData["interruptionType"] = "began"
+
+            // Check if the app was suspended (iOS 10.3+)
+            if let wasSuspended = userInfo[AVAudioSessionInterruptionWasSuspendedKey] as? Bool {
+                interruptionData["wasSuspended"] = wasSuspended
+                print("Brightcove plugin: Was suspended: \(wasSuspended)")
+            } else {
+                interruptionData["wasSuspended"] = false
+            }
+
+            // Get interruption reason (iOS 14.5+)
+            if #available(iOS 14.5, *) {
+                if let reasonValue = userInfo[AVAudioSessionInterruptionReasonKey] as? UInt,
+                   let reason = AVAudioSession.InterruptionReason(rawValue: reasonValue) {
+                    switch reason {
+                    case .default:
+                        interruptionData["reason"] = "default"
+                    case .appWasSuspended:
+                        interruptionData["reason"] = "appWasSuspended"
+                    case .builtInMicMuted:
+                        interruptionData["reason"] = "builtInMicMuted"
+                    case .routeDisconnected:
+                        interruptionData["reason"] = "routeDisconnected"
+                    @unknown default:
+                        interruptionData["reason"] = "unknown"
+                    }
+                    print("Brightcove plugin: Interruption reason: \(interruptionData["reason"] ?? "unknown")")
+                } else {
+                    interruptionData["reason"] = "unknown"
+                }
+            } else {
+                // For iOS versions before 14.5, infer reason from wasSuspended
+                if let wasSuspended = interruptionData["wasSuspended"] as? Bool, wasSuspended {
+                    interruptionData["reason"] = "appWasSuspended"
+                } else {
+                    interruptionData["reason"] = "default"
+                }
+            }
+
+        case .ended:
+            print("Brightcove plugin: Audio interruption ended")
+            interruptionData["interruptionType"] = "ended"
+            interruptionData["wasSuspended"] = false
+            interruptionData["reason"] = "default"
+
+            // Check if we should resume playback
+            if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+                let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                interruptionData["shouldResume"] = options.contains(.shouldResume)
+                print("Brightcove plugin: Should resume: \(options.contains(.shouldResume))")
+            } else {
+                interruptionData["shouldResume"] = false
+            }
+
+        @unknown default:
+            print("Brightcove plugin: Unknown audio interruption type")
+            return
+        }
+
+        print("Brightcove plugin: Emitting audioInterruption event with data: \(interruptionData)")
+        self.notifyListeners("audioInterruption", data: interruptionData)
     }
 
     /**
