@@ -9,6 +9,19 @@ export var AudioPlayerStatus;
     AudioPlayerStatus["STOPPED"] = "STOPPED";
     AudioPlayerStatus["ENDED"] = "ENDED";
 })(AudioPlayerStatus || (AudioPlayerStatus = {}));
+export var AudioInterruptionType;
+(function (AudioInterruptionType) {
+    AudioInterruptionType["BEGAN"] = "began";
+    AudioInterruptionType["ENDED"] = "ended";
+})(AudioInterruptionType || (AudioInterruptionType = {}));
+export var AudioInterruptionReason;
+(function (AudioInterruptionReason) {
+    AudioInterruptionReason["DEFAULT"] = "default";
+    AudioInterruptionReason["APP_WAS_SUSPENDED"] = "appWasSuspended";
+    AudioInterruptionReason["BUILT_IN_MIC_MUTED"] = "builtInMicMuted";
+    AudioInterruptionReason["ROUTE_DISCONNECTED"] = "routeDisconnected";
+    AudioInterruptionReason["UNKNOWN"] = "unknown";
+})(AudioInterruptionReason || (AudioInterruptionReason = {}));
 export var DownloadStatus;
 (function (DownloadStatus) {
     DownloadStatus["REQUESTED"] = "REQUESTED";

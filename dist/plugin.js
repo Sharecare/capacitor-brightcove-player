@@ -11,6 +11,17 @@ var capacitorExample = (function (exports, core) {
         AudioPlayerStatus["STOPPED"] = "STOPPED";
         AudioPlayerStatus["ENDED"] = "ENDED";
     })(exports.AudioPlayerStatus || (exports.AudioPlayerStatus = {}));
+    (function (AudioInterruptionType) {
+        AudioInterruptionType["BEGAN"] = "began";
+        AudioInterruptionType["ENDED"] = "ended";
+    })(exports.AudioInterruptionType || (exports.AudioInterruptionType = {}));
+    (function (AudioInterruptionReason) {
+        AudioInterruptionReason["DEFAULT"] = "default";
+        AudioInterruptionReason["APP_WAS_SUSPENDED"] = "appWasSuspended";
+        AudioInterruptionReason["BUILT_IN_MIC_MUTED"] = "builtInMicMuted";
+        AudioInterruptionReason["ROUTE_DISCONNECTED"] = "routeDisconnected";
+        AudioInterruptionReason["UNKNOWN"] = "unknown";
+    })(exports.AudioInterruptionReason || (exports.AudioInterruptionReason = {}));
     (function (DownloadStatus) {
         DownloadStatus["REQUESTED"] = "REQUESTED";
         DownloadStatus["IN_PROGRESS"] = "IN_PROGRESS";
