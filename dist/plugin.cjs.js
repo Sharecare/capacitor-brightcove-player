@@ -25,6 +25,14 @@ var core = require('@capacitor/core');
     AudioInterruptionReason["ROUTE_DISCONNECTED"] = "routeDisconnected";
     AudioInterruptionReason["UNKNOWN"] = "unknown";
 })(exports.AudioInterruptionReason || (exports.AudioInterruptionReason = {}));
+(function (AudioErrorType) {
+    AudioErrorType["NETWORK_ERROR"] = "NETWORK_ERROR";
+    AudioErrorType["IO_ERROR"] = "IO_ERROR";
+    AudioErrorType["TIMEOUT"] = "TIMEOUT";
+    AudioErrorType["DECODER_ERROR"] = "DECODER_ERROR";
+    AudioErrorType["DRM_ERROR"] = "DRM_ERROR";
+    AudioErrorType["UNKNOWN"] = "UNKNOWN";
+})(exports.AudioErrorType || (exports.AudioErrorType = {}));
 (function (DownloadStatus) {
     DownloadStatus["REQUESTED"] = "REQUESTED";
     DownloadStatus["IN_PROGRESS"] = "IN_PROGRESS";

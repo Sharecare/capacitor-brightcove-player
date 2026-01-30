@@ -5,6 +5,7 @@ data class AudioPlaybackState(
         val currentMillis: Long = 0,
         val totalMillis: Long = 0,
         val error: String? = null,
+        val errorDetails: AudioErrorDetails? = null,
         val remainingTime: Long? = null
 ) {
     enum class State {

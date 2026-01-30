@@ -28,6 +28,20 @@ export declare enum AudioInterruptionReason {
     ROUTE_DISCONNECTED = "routeDisconnected",
     UNKNOWN = "unknown"
 }
+export declare enum AudioErrorType {
+    NETWORK_ERROR = "NETWORK_ERROR",
+    IO_ERROR = "IO_ERROR",
+    TIMEOUT = "TIMEOUT",
+    DECODER_ERROR = "DECODER_ERROR",
+    DRM_ERROR = "DRM_ERROR",
+    UNKNOWN = "UNKNOWN"
+}
+export interface AudioErrorDetails {
+    message: string;
+    code: number;
+    type: AudioErrorType;
+    cause?: string;
+}
 export interface AudioInterruptionInfo {
     interruptionType: AudioInterruptionType;
     reason: AudioInterruptionReason;
@@ -40,6 +54,7 @@ export interface AudioPlayerState {
     currentMillis?: number;
     totalMillis?: number;
     error?: string;
+    errorDetails?: AudioErrorDetails;
     remainingTime?: number;
 }
 export interface AudioNotificationOptions {

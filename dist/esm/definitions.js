@@ -22,6 +22,15 @@ export var AudioInterruptionReason;
     AudioInterruptionReason["ROUTE_DISCONNECTED"] = "routeDisconnected";
     AudioInterruptionReason["UNKNOWN"] = "unknown";
 })(AudioInterruptionReason || (AudioInterruptionReason = {}));
+export var AudioErrorType;
+(function (AudioErrorType) {
+    AudioErrorType["NETWORK_ERROR"] = "NETWORK_ERROR";
+    AudioErrorType["IO_ERROR"] = "IO_ERROR";
+    AudioErrorType["TIMEOUT"] = "TIMEOUT";
+    AudioErrorType["DECODER_ERROR"] = "DECODER_ERROR";
+    AudioErrorType["DRM_ERROR"] = "DRM_ERROR";
+    AudioErrorType["UNKNOWN"] = "UNKNOWN";
+})(AudioErrorType || (AudioErrorType = {}));
 export var DownloadStatus;
 (function (DownloadStatus) {
     DownloadStatus["REQUESTED"] = "REQUESTED";

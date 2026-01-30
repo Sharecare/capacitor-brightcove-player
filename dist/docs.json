@@ -1393,11 +1393,59 @@
           "type": "string | undefined"
         },
         {
+          "name": "errorDetails",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "AudioErrorDetails"
+          ],
+          "type": "AudioErrorDetails"
+        },
+        {
           "name": "remainingTime",
           "tags": [],
           "docs": "",
           "complexTypes": [],
           "type": "number | undefined"
+        }
+      ]
+    },
+    {
+      "name": "AudioErrorDetails",
+      "slug": "audioerrordetails",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "message",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "code",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "type",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "AudioErrorType"
+          ],
+          "type": "AudioErrorType"
+        },
+        {
+          "name": "cause",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
         }
       ]
     },
@@ -1542,6 +1590,48 @@
         {
           "name": "ENDED",
           "value": "\"ENDED\"",
+          "tags": [],
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "AudioErrorType",
+      "slug": "audioerrortype",
+      "members": [
+        {
+          "name": "NETWORK_ERROR",
+          "value": "\"NETWORK_ERROR\"",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "IO_ERROR",
+          "value": "\"IO_ERROR\"",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "TIMEOUT",
+          "value": "\"TIMEOUT\"",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "DECODER_ERROR",
+          "value": "\"DECODER_ERROR\"",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "DRM_ERROR",
+          "value": "\"DRM_ERROR\"",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "UNKNOWN",
+          "value": "\"UNKNOWN\"",
           "tags": [],
           "docs": ""
         }

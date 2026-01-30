@@ -34,6 +34,22 @@ export enum AudioInterruptionReason {
   UNKNOWN = "unknown"
 }
 
+export enum AudioErrorType {
+  NETWORK_ERROR = "NETWORK_ERROR",   // Connection failed, bad HTTP status, network timeout
+  IO_ERROR = "IO_ERROR",             // File not found, permission denied, other IO issues
+  TIMEOUT = "TIMEOUT",
+  DECODER_ERROR = "DECODER_ERROR",
+  DRM_ERROR = "DRM_ERROR",
+  UNKNOWN = "UNKNOWN"
+}
+
+export interface AudioErrorDetails {
+  message: string;
+  code: number;           // Raw ExoPlayer error code
+  type: AudioErrorType;   // Convenience categorization
+  cause?: string;         // Root cause message if available
+}
+
 export interface AudioInterruptionInfo {
   interruptionType: AudioInterruptionType;
   reason: AudioInterruptionReason;
@@ -46,8 +62,9 @@ export interface AudioPlayerState {
   state: AudioPlayerStatus,
   currentMillis?: number,
   totalMillis?: number,
-  error?: string, // Only used if state = AudioPlayerStatus.ERROR
-  remainingTime?: number // Only used if setLooping() is used
+  error?: string,                    // Only used if state = AudioPlayerStatus.ERROR (backwards compatible)
+  errorDetails?: AudioErrorDetails,  // Detailed error info if state = AudioPlayerStatus.ERROR
+  remainingTime?: number             // Only used if setLooping() is used
 }
 
 export interface AudioNotificationOptions {
