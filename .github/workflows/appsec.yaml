@@ -1,0 +1,26 @@
+name: Sharecare Appsec Scan
+on:
+  push:
+    branches: [ main, master, develop, release ]
+  pull_request:
+    branches: [ main, master, develop, release ]
+env:
+  MAESTRO_TEAM: "mindsciences"
+  JIRA_PROJECT: "BH"
+jobs:
+  appsec-scan:
+    name: AppSec Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: AppSec Scan
+      uses: Sharecare/appsec-scan-action@main
+      with:
+        maestro_team: ${{ env.MAESTRO_TEAM }}
+        jira_project: ${{ env.JIRA_PROJECT }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        shiftleft_access_token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        qwiet_org_id: ${{ secrets.QWIET_ORG_ID }}
+        qwiet_team_token: ${{ secrets.QWIET_TEAM_TOKEN }}
+        appsec_secret: ${{ secrets.APPSEC_SECRET }}

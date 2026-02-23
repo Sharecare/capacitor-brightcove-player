@@ -21,12 +21,50 @@ export enum AudioPlayerStatus {
   ENDED = "ENDED"
 }
 
+export enum AudioInterruptionType {
+  BEGAN = "began",
+  ENDED = "ended"
+}
+
+export enum AudioInterruptionReason {
+  DEFAULT = "default",                   // Phone call, Siri, other app audio
+  APP_WAS_SUSPENDED = "appWasSuspended", // System suspended app (Low Power Mode!)
+  BUILT_IN_MIC_MUTED = "builtInMicMuted",// Mic was muted
+  ROUTE_DISCONNECTED = "routeDisconnected", // Audio route disconnected (e.g., Bluetooth)
+  UNKNOWN = "unknown"
+}
+
+export enum AudioErrorType {
+  NETWORK_ERROR = "NETWORK_ERROR",   // Connection failed, bad HTTP status, network timeout
+  IO_ERROR = "IO_ERROR",             // File not found, permission denied, other IO issues
+  TIMEOUT = "TIMEOUT",
+  DECODER_ERROR = "DECODER_ERROR",
+  DRM_ERROR = "DRM_ERROR",
+  UNKNOWN = "UNKNOWN"
+}
+
+export interface AudioErrorDetails {
+  message: string;
+  code: number;           // Raw ExoPlayer error code
+  type: AudioErrorType;   // Convenience categorization
+  cause?: string;         // Root cause message if available
+}
+
+export interface AudioInterruptionInfo {
+  interruptionType: AudioInterruptionType;
+  reason: AudioInterruptionReason;
+  isLowPowerModeEnabled: boolean;
+  wasSuspended: boolean;
+  shouldResume?: boolean; // Only present when interruptionType is "ended"
+}
+
 export interface AudioPlayerState {
   state: AudioPlayerStatus,
   currentMillis?: number,
   totalMillis?: number,
-  error?: string, // Only used if state = AudioPlayerStatus.ERROR
-  remainingTime?: number // Only used if setLooping() is used
+  error?: string,                    // Only used if state = AudioPlayerStatus.ERROR (backwards compatible)
+  errorDetails?: AudioErrorDetails,  // Detailed error info if state = AudioPlayerStatus.ERROR
+  remainingTime?: number             // Only used if setLooping() is used
 }
 
 export interface AudioNotificationOptions {

@@ -17,11 +17,44 @@ export declare enum AudioPlayerStatus {
     STOPPED = "STOPPED",
     ENDED = "ENDED"
 }
+export declare enum AudioInterruptionType {
+    BEGAN = "began",
+    ENDED = "ended"
+}
+export declare enum AudioInterruptionReason {
+    DEFAULT = "default",
+    APP_WAS_SUSPENDED = "appWasSuspended",
+    BUILT_IN_MIC_MUTED = "builtInMicMuted",
+    ROUTE_DISCONNECTED = "routeDisconnected",
+    UNKNOWN = "unknown"
+}
+export declare enum AudioErrorType {
+    NETWORK_ERROR = "NETWORK_ERROR",
+    IO_ERROR = "IO_ERROR",
+    TIMEOUT = "TIMEOUT",
+    DECODER_ERROR = "DECODER_ERROR",
+    DRM_ERROR = "DRM_ERROR",
+    UNKNOWN = "UNKNOWN"
+}
+export interface AudioErrorDetails {
+    message: string;
+    code: number;
+    type: AudioErrorType;
+    cause?: string;
+}
+export interface AudioInterruptionInfo {
+    interruptionType: AudioInterruptionType;
+    reason: AudioInterruptionReason;
+    isLowPowerModeEnabled: boolean;
+    wasSuspended: boolean;
+    shouldResume?: boolean;
+}
 export interface AudioPlayerState {
     state: AudioPlayerStatus;
     currentMillis?: number;
     totalMillis?: number;
     error?: string;
+    errorDetails?: AudioErrorDetails;
     remainingTime?: number;
 }
 export interface AudioNotificationOptions {

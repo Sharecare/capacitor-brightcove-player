@@ -36,6 +36,7 @@ import com.jnesis.capacitor.brightcoveplayer.exception.MissingFileIdException
 import com.jnesis.capacitor.brightcoveplayer.exception.MissingSourceUrlException
 import com.jnesis.capacitor.brightcoveplayer.exception.PluginException
 import com.jnesis.capacitor.brightcoveplayer.manager.CatalogManager
+import com.jnesis.capacitor.brightcoveplayer.model.AudioErrorDetails
 import com.jnesis.capacitor.brightcoveplayer.model.AudioPlaybackState
 import com.jnesis.capacitor.brightcoveplayer.utils.AudioNotificationOptions
 import io.reactivex.Observable
@@ -318,9 +319,16 @@ class AudioService : Service() {
                 it.addListener(object : Player.Listener {
 
                     override fun onPlayerError(error: PlaybackException) {
+                        val errorDetails = AudioErrorDetails(
+                            message = error.message ?: error.toString(),
+                            code = error.errorCode,
+                            type = AudioErrorDetails.categorizeErrorCode(error.errorCode),
+                            cause = error.cause?.message
+                        )
                         playbackState.onNext(AudioPlaybackState(
                             state = AudioPlaybackState.State.ERROR,
-                            error = error.toString()
+                            error = error.toString(),
+                            errorDetails = errorDetails
                         ))
                     }
 
