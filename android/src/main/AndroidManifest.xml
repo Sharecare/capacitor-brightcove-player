@@ -2,11 +2,15 @@
     >
 
     <application>
-        <service android:name="com.jnesis.capacitor.brightcoveplayer.service.AudioService" android:enabled="true" />
+        <service 
+            android:name="com.jnesis.capacitor.brightcoveplayer.service.AudioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:enabled="true" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
 </manifest>
   
