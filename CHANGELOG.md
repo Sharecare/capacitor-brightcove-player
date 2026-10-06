@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.0] - 2026-10-06
+### Changed
+- [iOS & Android] Update to Capacitor 8 (peer dependency `@capacitor/core >=8.0.0`). Motivated by CVE-2026-103922 (GHSA-rvm3-566m-v7fv), fixed in the app runtime from 8.5.1; see `docs/CAPACITOR_8_MIGRATION.md`.
+- [Android] AGP 8.13.0, Gradle 8.14.3, Kotlin 2.2.20, Java 21, compileSdk/targetSdk 36, minSdk 24, kotlinx-serialization-json 1.9.0.
+- [iOS] Deployment target 15.0. Podspec now pins Brightcove-Player-Core-static 6.12.7 (was 6.11.0, out of sync with the Podfile since 6.0.2).
+- [Web] `addListener` returns `Promise<PluginListenerHandle>` only; `WebPlugin` constructor no longer takes a config object.
+- Tooling: TypeScript 5.9, rollup 4 (`rollup.config.mjs`), eslint 8, prettier 3, Node 22 in CI.
+
 ## [6.0.2] - 2024-03-11
 ### Changed
 - [Android]  Upgrade brightcove SDK from 8.0.1 to 8.4.1

@@ -1,4 +1,4 @@
-import { PluginListenerHandle } from '@capacitor/core';
+import type { PluginListenerHandle } from '@capacitor/core';
 export interface VideoPlayerPositionState {
     currentMillis: number;
     totalMillis: number;
@@ -22,15 +22,15 @@ export declare enum AudioInterruptionType {
     ENDED = "ended"
 }
 export declare enum AudioInterruptionReason {
-    DEFAULT = "default",
-    APP_WAS_SUSPENDED = "appWasSuspended",
-    BUILT_IN_MIC_MUTED = "builtInMicMuted",
-    ROUTE_DISCONNECTED = "routeDisconnected",
+    DEFAULT = "default",// Phone call, Siri, other app audio
+    APP_WAS_SUSPENDED = "appWasSuspended",// System suspended app (Low Power Mode!)
+    BUILT_IN_MIC_MUTED = "builtInMicMuted",// Mic was muted
+    ROUTE_DISCONNECTED = "routeDisconnected",// Audio route disconnected (e.g., Bluetooth)
     UNKNOWN = "unknown"
 }
 export declare enum AudioErrorType {
-    NETWORK_ERROR = "NETWORK_ERROR",
-    IO_ERROR = "IO_ERROR",
+    NETWORK_ERROR = "NETWORK_ERROR",// Connection failed, bad HTTP status, network timeout
+    IO_ERROR = "IO_ERROR",// File not found, permission denied, other IO issues
     TIMEOUT = "TIMEOUT",
     DECODER_ERROR = "DECODER_ERROR",
     DRM_ERROR = "DRM_ERROR",
@@ -88,14 +88,14 @@ export interface MediaMetaData {
     posterUrl: string;
     downloaded: boolean;
     fileSize: number;
-    subtitles: Array<Subtitle>;
+    subtitles: Subtitle[];
 }
 export interface Subtitle {
     language: string;
     src: string;
 }
 export interface BrightcovePlayerPlugin {
-    addListener(eventName: string, listenerFunc: (...args: any) => void): Promise<PluginListenerHandle> & PluginListenerHandle;
+    addListener(eventName: string, listenerFunc: (...args: any) => void): Promise<PluginListenerHandle>;
     removeAllListeners(): Promise<void>;
     updateBrightcoveAccount(options: {
         accountId: string;
@@ -162,7 +162,7 @@ export interface BrightcovePlayerPlugin {
         fileId: string;
     }): Promise<void>;
     getDownloadedMediasState(): Promise<{
-        medias: Array<DownloadStateMediaInfo>;
+        medias: DownloadStateMediaInfo[];
     }>;
     deleteDownloadedMedia(options: {
         fileId: string;

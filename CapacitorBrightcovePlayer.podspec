@@ -11,9 +11,9 @@ Pod::Spec.new do |s|
   s.author = package['author']
   s.source = { :git => "https://github.com/brightcove/brightcove-player-sdk-ios.git", :tag => "v#{s.version}" }
   s.source_files = 'ios/Plugin/**/*.{swift,h,m,c,cc,mm,cpp}'
-  s.ios.deployment_target  = '12.0'
+  s.ios.deployment_target  = '15.0'
   s.dependency 'Capacitor'
   s.static_framework = true
-  s.dependency 'Brightcove-Player-Core-static', '6.11.0'
+  s.dependency 'Brightcove-Player-Core-static', '6.12.7'
   s.swift_version = '5.1'
 end

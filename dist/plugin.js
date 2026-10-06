@@ -1,6 +1,7 @@
 var capacitorExample = (function (exports, core) {
     'use strict';
 
+    exports.AudioPlayerStatus = void 0;
     (function (AudioPlayerStatus) {
         AudioPlayerStatus["NONE"] = "NONE";
         AudioPlayerStatus["ERROR"] = "ERROR";
@@ -11,10 +12,12 @@ var capacitorExample = (function (exports, core) {
         AudioPlayerStatus["STOPPED"] = "STOPPED";
         AudioPlayerStatus["ENDED"] = "ENDED";
     })(exports.AudioPlayerStatus || (exports.AudioPlayerStatus = {}));
+    exports.AudioInterruptionType = void 0;
     (function (AudioInterruptionType) {
         AudioInterruptionType["BEGAN"] = "began";
         AudioInterruptionType["ENDED"] = "ended";
     })(exports.AudioInterruptionType || (exports.AudioInterruptionType = {}));
+    exports.AudioInterruptionReason = void 0;
     (function (AudioInterruptionReason) {
         AudioInterruptionReason["DEFAULT"] = "default";
         AudioInterruptionReason["APP_WAS_SUSPENDED"] = "appWasSuspended";
@@ -22,6 +25,7 @@ var capacitorExample = (function (exports, core) {
         AudioInterruptionReason["ROUTE_DISCONNECTED"] = "routeDisconnected";
         AudioInterruptionReason["UNKNOWN"] = "unknown";
     })(exports.AudioInterruptionReason || (exports.AudioInterruptionReason = {}));
+    exports.AudioErrorType = void 0;
     (function (AudioErrorType) {
         AudioErrorType["NETWORK_ERROR"] = "NETWORK_ERROR";
         AudioErrorType["IO_ERROR"] = "IO_ERROR";
@@ -30,6 +34,7 @@ var capacitorExample = (function (exports, core) {
         AudioErrorType["DRM_ERROR"] = "DRM_ERROR";
         AudioErrorType["UNKNOWN"] = "UNKNOWN";
     })(exports.AudioErrorType || (exports.AudioErrorType = {}));
+    exports.DownloadStatus = void 0;
     (function (DownloadStatus) {
         DownloadStatus["REQUESTED"] = "REQUESTED";
         DownloadStatus["IN_PROGRESS"] = "IN_PROGRESS";
@@ -41,15 +46,12 @@ var capacitorExample = (function (exports, core) {
     })(exports.DownloadStatus || (exports.DownloadStatus = {}));
 
     const BrightcovePlayer = core.registerPlugin('BrightcovePlayer', {
-        web: () => Promise.resolve().then(function () { return web; }).then(m => new m.BrightcovePlayerWeb())
+        web: () => Promise.resolve().then(function () { return web; }).then((m) => new m.BrightcovePlayerWeb()),
     });
 
     class BrightcovePlayerWeb extends core.WebPlugin {
         constructor() {
-            super({
-                name: 'BrightcovePlayer',
-                platforms: ['web'],
-            });
+            super();
             window.addEventListener('backButton', () => this.notifyBackButtonPressed());
         }
         // Brightcove account
@@ -144,11 +146,11 @@ var capacitorExample = (function (exports, core) {
             throw this.unimplemented('Not implemented on web.');
         }
         async getDownloadedMediasState() {
-            console.log("get Downloaded medias");
+            console.log('get Downloaded medias');
             throw this.unimplemented('Not implemented on web.');
         }
         async deleteDownloadedMedia(options) {
-            console.log("Delete downloaded file", options);
+            console.log('Delete downloaded file', options);
             throw this.unimplemented('Not implemented on web.');
         }
         // Workaround for Android : better solution ?
@@ -173,9 +175,7 @@ var capacitorExample = (function (exports, core) {
 
     exports.BrightcovePlayer = BrightcovePlayer;
 
-    Object.defineProperty(exports, '__esModule', { value: true });
-
     return exports;
 
-}({}, capacitorExports));
+})({}, capacitorExports);
 //# sourceMappingURL=plugin.js.map

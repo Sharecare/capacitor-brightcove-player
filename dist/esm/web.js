@@ -1,10 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 export class BrightcovePlayerWeb extends WebPlugin {
     constructor() {
-        super({
-            name: 'BrightcovePlayer',
-            platforms: ['web'],
-        });
+        super();
         window.addEventListener('backButton', () => this.notifyBackButtonPressed());
     }
     // Brightcove account
@@ -99,11 +96,11 @@ export class BrightcovePlayerWeb extends WebPlugin {
         throw this.unimplemented('Not implemented on web.');
     }
     async getDownloadedMediasState() {
-        console.log("get Downloaded medias");
+        console.log('get Downloaded medias');
         throw this.unimplemented('Not implemented on web.');
     }
     async deleteDownloadedMedia(options) {
-        console.log("Delete downloaded file", options);
+        console.log('Delete downloaded file', options);
         throw this.unimplemented('Not implemented on web.');
     }
     // Workaround for Android : better solution ?
