@@ -12,12 +12,12 @@ end
 
 target 'Plugin' do
   capacitor_pods
-  pod 'Brightcove-Player-Core-static','6.12.7'
+  pod 'Brightcove-Player-Core-static/XCFramework','6.12.7'
 end
 
 target 'PluginTests' do
   capacitor_pods
-  pod 'Brightcove-Player-Core-static','6.12.7'
+  pod 'Brightcove-Player-Core-static/XCFramework','6.12.7'
 end
 
 post_install do |installer|

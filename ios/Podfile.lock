@@ -1,13 +1,11 @@
 PODS:
-  - Brightcove-Player-Core-static (6.12.7):
-    - Brightcove-Player-Core-static/Framework (= 6.12.7)
-  - Brightcove-Player-Core-static/Framework (6.12.7)
+  - Brightcove-Player-Core-static/XCFramework (6.12.7)
   - Capacitor (8.5.2):
     - CapacitorCordova
   - CapacitorCordova (8.5.2)
 
 DEPENDENCIES:
-  - Brightcove-Player-Core-static (= 6.12.7)
+  - Brightcove-Player-Core-static/XCFramework (= 6.12.7)
   - "Capacitor (from `../node_modules/@capacitor/ios`)"
   - "CapacitorCordova (from `../node_modules/@capacitor/ios`)"
 
@@ -26,6 +24,6 @@ SPEC CHECKSUMS:
   Capacitor: 59aea4e8bd98b24b798919b4c55ae90c6ded1b0d
   CapacitorCordova: 5bec5648cbd09a176ce34ce5e7b6cdabb2c8a327
 
-PODFILE CHECKSUM: 2ff8f064bfdfd897d5887b61f5915cfaa10b89d6
+PODFILE CHECKSUM: bfe2ac57e38fa86e1ce1bafe1c18e6188c987446
 
 COCOAPODS: 1.16.2
