@@ -67,7 +67,7 @@ export declare class BrightcovePlayerWeb extends WebPlugin implements Brightcove
         showNotification?: boolean;
     }): Promise<void>;
     getDownloadedMediasState(): Promise<{
-        medias: Array<DownloadStateMediaInfo>;
+        medias: DownloadStateMediaInfo[];
     }>;
     deleteDownloadedMedia(options: {
         fileId: string;

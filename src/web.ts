@@ -1,24 +1,22 @@
 import { WebPlugin } from '@capacitor/core';
+
 import type {
   BrightcovePlayerPlugin,
   AudioPlayerState,
   AudioNotificationOptions,
-  DownloadStateMediaInfo, MediaMetaData
+  DownloadStateMediaInfo,
+  MediaMetaData,
 } from './definitions';
 
 export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPlugin {
   constructor() {
-
-    super({
-      name: 'BrightcovePlayer',
-      platforms: ['web'],
-    });
+    super();
 
     window.addEventListener('backButton', () => this.notifyBackButtonPressed());
   }
 
   // Brightcove account
-  async updateBrightcoveAccount(options: { accountId: string, policyKey: string }): Promise<void> {
+  async updateBrightcoveAccount(options: { accountId: string; policyKey: string }): Promise<void> {
     console.log('updateBrightcoveAccount', options);
     throw this.unimplemented('Not implemented on web.');
   }
@@ -30,7 +28,11 @@ export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPl
   }
 
   // Video
-  async playVideo(options: { fileId: string, position?: number, local?: boolean }): Promise<{ name: string, duration: number }> {
+  async playVideo(options: {
+    fileId: string;
+    position?: number;
+    local?: boolean;
+  }): Promise<{ name: string; duration: number }> {
     console.log('playVideo', options);
     throw this.unimplemented('Not implemented on web.');
   }
@@ -44,7 +46,7 @@ export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPl
   }
 
   // Android only
-  async setDownloadNotifications(options: { enabled: boolean}): Promise<void> {
+  async setDownloadNotifications(options: { enabled: boolean }): Promise<void> {
     console.log('setDownloadNotifications', options);
     throw this.unimplemented('Not implemented on web.');
   }
@@ -55,7 +57,11 @@ export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPl
   }
 
   // Audio
-  async loadAudio(options: { fileId: string, local?: boolean, defaultPosterUrl?: string }): Promise<{ name?: string, duration?: number }> {
+  async loadAudio(options: {
+    fileId: string;
+    local?: boolean;
+    defaultPosterUrl?: string;
+  }): Promise<{ name?: string; duration?: number }> {
     console.log('loadAudio', options);
     throw this.unimplemented('Not implemented on web.');
   }
@@ -110,25 +116,24 @@ export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPl
     throw this.unimplemented('Not implemented on web.');
   }
 
-
   // Offline files
-  async isMediaAvailableLocally(options: { fileId: string }): Promise<{value: boolean}> {
+  async isMediaAvailableLocally(options: { fileId: string }): Promise<{ value: boolean }> {
     console.log('Is Media Available Locally', options);
     throw this.unimplemented('Not implemented on web.');
   }
 
-  async downloadMedia(options: { fileId: string, showNotification?: boolean }): Promise<void> {
+  async downloadMedia(options: { fileId: string; showNotification?: boolean }): Promise<void> {
     console.log('Download Media', options);
     throw this.unimplemented('Not implemented on web.');
   }
 
-  async getDownloadedMediasState(): Promise<{ medias: Array<DownloadStateMediaInfo>}> {
-    console.log("get Downloaded medias");
+  async getDownloadedMediasState(): Promise<{ medias: DownloadStateMediaInfo[] }> {
+    console.log('get Downloaded medias');
     throw this.unimplemented('Not implemented on web.');
   }
 
   async deleteDownloadedMedia(options: { fileId: string }): Promise<void> {
-    console.log("Delete downloaded file", options);
+    console.log('Delete downloaded file', options);
     throw this.unimplemented('Not implemented on web.');
   }
 
@@ -138,13 +143,13 @@ export class BrightcovePlayerWeb extends WebPlugin implements BrightcovePlayerPl
     throw this.unimplemented('Not implemented on web.');
   }
 
-  async playInternalAudio(options: {file: string}): Promise<void> {
+  async playInternalAudio(options: { file: string }): Promise<void> {
     console.log('Local internal not implemented ', options);
     throw this.unimplemented('Not implemented on web.');
   }
 
   async deleteAllDownloadedMedias(): Promise<void> {
-    console.log('Delete all downloaded medias')
+    console.log('Delete all downloaded medias');
     throw this.unimplemented('Not implemented on web.');
   }
 }
