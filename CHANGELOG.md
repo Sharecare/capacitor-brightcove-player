@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.0.0] - 2026-10-06
 ### Changed
-- [iOS & Android] Update to Capacitor 8 (peer dependency `@capacitor/core >=8.0.0`). Motivated by CVE-2026-103922 (GHSA-rvm3-566m-v7fv), fixed in the app runtime from 8.5.1; see `docs/CAPACITOR_8_MIGRATION.md`.
+- [iOS & Android] Update to Capacitor 8 (peer dependency `@capacitor/core >=8.0.0`). Motivated by CVE-2026-103922 (GHSA-rvm3-566m-v7fv), fixed in the app runtime from 8.5.1.
 - [Android] AGP 8.13.0, Gradle 8.14.3, Kotlin 2.2.20, Java 21, compileSdk/targetSdk 36, minSdk 24, kotlinx-serialization-json 1.9.0.
 - [iOS] Deployment target 15.0. Podspec now depends on `Brightcove-Player-Core-static/XCFramework` 6.12.7 (was the `Framework` subspec at 6.11.0, out of sync with the Podfile since 6.0.2). The XCFramework subspec removes the `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64` setting the fat-framework subspec injected into the app, so the iOS Simulator no longer needs Rosetta on Apple Silicon.
 - [Web] `addListener` returns `Promise<PluginListenerHandle>` only; `WebPlugin` constructor no longer takes a config object.
