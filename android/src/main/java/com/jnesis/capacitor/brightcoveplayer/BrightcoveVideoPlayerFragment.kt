@@ -108,6 +108,9 @@ class BrightcoveVideoPlayerFragment() : BrightcovePlayerFragment() {
         properties[Event.SEEK_RELATIVE_ENABLED] = false
         baseVideoView.eventEmitter.emit(EventType.SEEK_CONTROLLER_CONFIGURATION, properties)
 
+        // Let captions use the letterbox area so the control bar does not clip them in portrait
+        baseVideoView.closedCaptioningView?.setKeepCaptionsWithinVideoBounds(false)
+
         // Fullscreen auto
         baseVideoView.eventEmitter.emit(EventType.ENTER_FULL_SCREEN)
         baseVideoView.eventEmitter.on(EventType.EXIT_FULL_SCREEN) {
