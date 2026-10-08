@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.1.0] - 2026-10-08
+### Changed
+- [Android] Upgrade Brightcove SDK 8.4.1 → 10.4.32 (ExoPlayer 2.19.1 → AndroidX Media3 1.6.1). `OfflineCatalog` now comes from the `offline-playback` artifact, which is declared explicitly; Gson, RxAndroid and the Media3 artifacts are declared explicitly instead of arriving transitively.
+- [Android] `AudioService` is now a Media3 `MediaSessionService`: the notification, lock-screen/Bluetooth controls and the foreground-service lifecycle are handled by Media3 (`DefaultMediaNotificationProvider`, same notification id and channel). The custom `PlayerNotificationManager`, `AsyncTask` bitmap loader and `stopForeground(Boolean)` code are gone. The player now requests audio focus and pauses on headphone disconnect.
+- [Android] Manifest declares `foregroundServiceType="mediaPlayback"` on `AudioService`, `dataSync` on Brightcove's bundled FileDownloader service, and the matching `FOREGROUND_SERVICE_MEDIA_PLAYBACK` / `FOREGROUND_SERVICE_DATA_SYNC` permissions (Android 14+ targets). Apps must file the Play Console foreground-service declaration for both types.
+- [Android] Offline playback uses the 10.x `OfflineStoreManager` with `OfflineDashManifestParser`, `MultiDataSource` and `ExoPlayerVideoDisplayComponent.setMediaStore`; the pre-10 constructors silently ignore downloaded files.
+- No JS API changes: methods, events and payloads are unchanged.
+### Fixed
+- [Android] `audioNotificationClose` is now emitted when the notification's close action is used; the notification listener and close action were defined but never registered.
+
 ## [8.0.0] - 2026-10-06
 ### Changed
 - [iOS & Android] Update to Capacitor 8 (peer dependency `@capacitor/core >=8.0.0`). Motivated by CVE-2026-103922 (GHSA-rvm3-566m-v7fv), fixed in the app runtime from 8.5.1.

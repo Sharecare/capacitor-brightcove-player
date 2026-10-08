@@ -1,35 +1,43 @@
 package com.jnesis.capacitor.brightcoveplayer.service
 
 import android.app.Activity
-import android.app.Notification
 import android.app.PendingIntent
-import android.app.Service
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.*
-import androidx.core.app.NotificationCompat
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.dash.DefaultDashChunkSource
+import androidx.media3.exoplayer.dash.manifest.DashManifest
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
+import androidx.media3.exoplayer.upstream.ParsingLoadable
+import androidx.media3.session.CommandButton
+import androidx.media3.session.DefaultMediaNotificationProvider
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import com.brightcove.player.controller.ExoPlayerSourceSelector
 import com.brightcove.player.dash.BrightcoveDashManifestParser
 import com.brightcove.player.dash.OfflineDashManifestParser
+import com.brightcove.player.edge.OfflineStoreManager
 import com.brightcove.player.model.Video
 import com.brightcove.player.offline.MultiDataSource
 import com.getcapacitor.PluginCall
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.dash.DashMediaSource
-import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
-import com.google.android.exoplayer2.source.dash.manifest.DashManifest
-import com.google.android.exoplayer2.source.dash.manifest.DashManifestParser
-import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import com.google.android.exoplayer2.ui.PlayerNotificationManager.Builder
-import com.google.android.exoplayer2.upstream.*
-import com.google.android.exoplayer2.util.Util
-import com.jnesis.capacitor.brightcoveplayer.BrightcovePlayer
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.jnesis.capacitor.brightcoveplayer.capacitorbrightcoveplayer.R
 import com.jnesis.capacitor.brightcoveplayer.events.AudioNotificationCloseEvent
 import com.jnesis.capacitor.brightcoveplayer.events.EventBus
 import com.jnesis.capacitor.brightcoveplayer.exception.MissingFileIdException
@@ -44,13 +52,12 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import java.net.URI
-import java.net.URL
-import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.Executors
 
 
-class AudioService : Service() {
+// Media3 MediaSessionService: the session owns the notification, lock-screen controls and the foreground state
+@UnstableApi
+class AudioService : MediaSessionService() {
 
     val playbackState: BehaviorSubject<AudioPlaybackState> = BehaviorSubject.create<AudioPlaybackState>().apply { onNext(AudioPlaybackState()) }
     val positionState: PublishSubject<AudioPlaybackState> = PublishSubject.create<AudioPlaybackState>().apply { onNext(AudioPlaybackState()) }
@@ -64,7 +71,7 @@ class AudioService : Service() {
     private val binder = AudioServiceBinder()
 
     private var exoPlayer: ExoPlayer? = null
-    private var playerNotificationManager: PlayerNotificationManager? = null
+    private var mediaSession: MediaSession? = null
     private var currentMediaSource: MediaSource? = null
     private var currentMedia: Video? = null
     private var preventStop = false
@@ -73,12 +80,33 @@ class AudioService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 89425
+        private const val CLOSE_COMMAND = "close"
+        private const val REWIND_COMMAND = "rewind"
+        private const val FORWARD_COMMAND = "forward"
     }
 
-    override fun onBind(intent: Intent?): IBinder {
-        return binder
+    override fun onCreate() {
+        super.onCreate()
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider.Builder(this)
+                .setNotificationId(NOTIFICATION_ID)
+                .setChannelId(getString(R.string.notification_channel_id))
+                .setChannelName(R.string.notification_channel_name)
+                .build()
+        )
     }
-    override fun onDestroy() = destroyPlayer()
+
+    // The plugin binds without an action; Media3 controllers bind with their own actions
+    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent) ?: binder
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+
+    override fun onTaskRemoved(rootIntent: Intent?) = pauseAllPlayersAndStopSelf()
+
+    override fun onDestroy() {
+        destroyPlayer()
+        super.onDestroy()
+    }
 
     fun destroyPlayer(removeNotification: Boolean = true) {
         refreshNotificationToBeginning()
@@ -86,8 +114,8 @@ class AudioService : Service() {
         unsubscribe?.onComplete()
         playbackState.onNext(AudioPlaybackState())
         positionState.onNext(AudioPlaybackState())
-        if (removeNotification) stopForeground(true)
-        playerNotificationManager?.setPlayer(null)
+        mediaSession?.release()
+        mediaSession = null
         exoPlayer?.release()
         exoPlayer = null
         currentMediaSource = null
@@ -127,8 +155,8 @@ class AudioService : Service() {
         }
     }
 
-    private fun buildDataSourceFactory(httpDatasourceFactory: HttpDataSource.Factory): DataSource.Factory {
-        return MultiDataSource.Factory(this@AudioService, httpDatasourceFactory, null)
+    private fun buildHttpDataSourceFactory(): HttpDataSource.Factory {
+        return DefaultHttpDataSource.Factory().setUserAgent(Util.getUserAgent(this@AudioService, "Capacitor Brightcove Plugin"))
     }
 
     private fun getMediaSourceFromVideo(video: Video?, local: Boolean): MediaSource? {
@@ -143,30 +171,19 @@ class AudioService : Service() {
         if (video == null) {
             return null
         }
-        val videoSource: MediaSource
-        val httpDataSourceFactory: HttpDataSource.Factory = DefaultHttpDataSource.Factory().setUserAgent(Util.getUserAgent(this@AudioService, "Capacitor Brightcove Plugin"))
-        val dataSourceFactory = this.buildDataSourceFactory(httpDataSourceFactory)
+        // Since 10.x the parser and data source only resolve downloaded segments when given the offline store
+        val offlineStore = OfflineStoreManager.getInstance(this@AudioService)
+        val dataSourceFactory: DataSource.Factory = MultiDataSource.Factory(this@AudioService, buildHttpDataSourceFactory(), null, offlineStore)
+        val manifestParser: ParsingLoadable.Parser<out DashManifest> = OfflineDashManifestParser(BrightcoveDashManifestParser(), offlineStore)
 
-        var manifestParser: ParsingLoadable.Parser<out DashManifest?> = BrightcoveDashManifestParser()
-        manifestParser = OfflineDashManifestParser(manifestParser as DashManifestParser, this@AudioService)
-
-        val mediaItem: MediaItem = MediaItem.Builder()
-            .setUri(getVideoUrl(video))
-            .setTag(MediaTags(
-                title = video.properties["name"].toString(),
-                description = video.properties["description"].toString(),
-                imageUri = this.getPoster(video)
-            )).build()
-
-        videoSource = DashMediaSource.Factory(
+        val videoSource: MediaSource = DashMediaSource.Factory(
                 DefaultDashChunkSource.Factory(dataSourceFactory),
-                this.buildDataSourceFactory(httpDataSourceFactory)
+                dataSourceFactory
         )
                 .setManifestParser(manifestParser)
                 .setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy())
                 .setFallbackTargetLiveOffsetMs(30000L)
-
-                .createMediaSource(mediaItem)
+                .createMediaSource(buildMediaItem(video))
 
         val captionPairs = video.properties["captionSources"] as MutableList<*>?
         captionPairs?.clear()
@@ -178,21 +195,23 @@ class AudioService : Service() {
             return null
         }
 
-        val httpDataSourceFactory: HttpDataSource.Factory = DefaultHttpDataSource.Factory().setUserAgent(Util.getUserAgent(this@AudioService, "Capacitor Brightcove Plugin"))
-        val dataSourceFactory = this.buildDataSourceFactory(httpDataSourceFactory)
-
-        val description = video.properties["description"]?.toString() ?: ""
-        val mediaItem: MediaItem = MediaItem.Builder()
-            .setUri(getVideoUrl(video))
-            .setTag(MediaTags(
-            title = video.properties["name"].toString(),
-            description = description,
-            imageUri = this.getPoster(video)
-        )).build()
+        val dataSourceFactory: DataSource.Factory = MultiDataSource.Factory(this@AudioService, buildHttpDataSourceFactory(), null)
 
         return DashMediaSource
                 .Factory(dataSourceFactory)
-                .createMediaSource(mediaItem)
+                .createMediaSource(buildMediaItem(video))
+    }
+
+    // Title, description and artwork are read from the metadata by the Media3 notification
+    private fun buildMediaItem(video: Video): MediaItem {
+        return MediaItem.Builder()
+            .setUri(getVideoUrl(video))
+            .setMediaMetadata(MediaMetadata.Builder()
+                .setTitle(video.properties["name"]?.toString() ?: "")
+                .setArtist(video.properties["description"]?.toString() ?: "")
+                .setArtworkUri(getPoster(video)?.let { Uri.parse(it.toString()) })
+                .build())
+            .build()
     }
 
     private fun getPoster(video: Video): URI? {
@@ -248,7 +267,6 @@ class AudioService : Service() {
         if(currentMediaSource !== null) {
             pause()
             seekTo(0)
-            playerNotificationManager!!.invalidate()
         }
 
     }
@@ -281,7 +299,6 @@ class AudioService : Service() {
 
     fun toggleLooping(enabled: Boolean) {
         ensurePlayer()
-        playerNotificationManager?.setUseChronometer(!enabled)
         activity!!.runOnUiThread {
             if (enabled) {
                 exoPlayer!!.repeatMode = Player.REPEAT_MODE_ONE
@@ -314,6 +331,8 @@ class AudioService : Service() {
             .Builder(this)
             .setSeekBackIncrementMs(AudioNotificationOptions.audioNotificationRewindIncrementMs)
             .setSeekForwardIncrementMs(AudioNotificationOptions.audioNotificationForwardIncrementMs)
+            .setAudioAttributes(AudioAttributes.DEFAULT, true)
+            .setHandleAudioBecomingNoisy(true)
             .build()
             .also {
                 it.addListener(object : Player.Listener {
@@ -359,7 +378,7 @@ class AudioService : Service() {
 
             initPositionInterval()
 
-            createNotification()
+            createSession()
         }
     }
 
@@ -403,11 +422,48 @@ class AudioService : Service() {
                 }
     }
 
-    private fun createNotification() {
-        playerNotificationManager = Builder(this, NOTIFICATION_ID,BrightcovePlayer.NOTIFICATION_CHANNEL_ID).setMediaDescriptionAdapter(AudioMediaDescriptionAdapter()).build().apply {
-            this.setUseStopAction(true)
-            setPlayer(exoPlayer)
+    private fun createSession() {
+        val builder = MediaSession.Builder(this, exoPlayer!!).setCallback(SessionCallback())
+        createContentIntent()?.let { builder.setSessionActivity(it) }
+        mediaSession = builder.build().apply { setMediaButtonPreferences(notificationButtons()) }
+    }
+
+    // Rewind/forward use the increments from setAudioNotificationOptions; close goes to the overflow menu
+    private fun notificationButtons(): List<CommandButton> {
+        return listOf(
+            CommandButton.Builder(CommandButton.ICON_SKIP_BACK)
+                .setSessionCommand(SessionCommand(REWIND_COMMAND, Bundle.EMPTY))
+                .setSlots(CommandButton.SLOT_BACK)
+                .setDisplayName(REWIND_COMMAND)
+                .build(),
+            CommandButton.Builder(CommandButton.ICON_SKIP_FORWARD)
+                .setSessionCommand(SessionCommand(FORWARD_COMMAND, Bundle.EMPTY))
+                .setSlots(CommandButton.SLOT_FORWARD)
+                .setDisplayName(FORWARD_COMMAND)
+                .build(),
+            CommandButton.Builder(CommandButton.ICON_STOP)
+                .setSessionCommand(SessionCommand(CLOSE_COMMAND, Bundle.EMPTY))
+                .setSlots(CommandButton.SLOT_OVERFLOW)
+                .setDisplayName(CLOSE_COMMAND)
+                .build()
+        )
+    }
+
+    private fun createContentIntent(): PendingIntent? {
+        val currentActivity = activity ?: return null
+
+        val intent = Intent(currentActivity, currentActivity.javaClass).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
         }
+
+        var intentFlagType = PendingIntent.FLAG_ONE_SHOT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            intentFlagType =
+                PendingIntent.FLAG_IMMUTABLE // or only use FLAG_MUTABLE >> if it needs to be used with inline replies or bubbles.
+        }
+
+        return PendingIntent.getActivity(currentActivity, 0, intent, intentFlagType)
     }
 
     private fun checkFile() = currentMediaSource ?: throw MissingFileIdException()
@@ -416,112 +472,31 @@ class AudioService : Service() {
         fun getService(): AudioService = this@AudioService
     }
 
-    private inner class AudioMediaDescriptionAdapter : PlayerNotificationManager.MediaDescriptionAdapter {
+    private inner class SessionCallback : MediaSession.Callback {
 
-        override fun getCurrentContentTitle(player: Player): String {
-            return getTags(player)?.title ?: ""
+        override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
+            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
+                .add(SessionCommand(REWIND_COMMAND, Bundle.EMPTY))
+                .add(SessionCommand(FORWARD_COMMAND, Bundle.EMPTY))
+                .add(SessionCommand(CLOSE_COMMAND, Bundle.EMPTY))
+                .build()
+
+            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                .setAvailableSessionCommands(sessionCommands)
+                .build()
         }
 
-        override fun createCurrentContentIntent(player: Player): PendingIntent? {
-
-            val intent = Intent(activity, activity!!.javaClass).apply {
-                action = Intent.ACTION_MAIN
-                addCategory(Intent.CATEGORY_LAUNCHER)
-            }
-
-            var intentFlagType = PendingIntent.FLAG_ONE_SHOT
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                intentFlagType =
-                    PendingIntent.FLAG_IMMUTABLE // or only use FLAG_MUTABLE >> if it needs to be used with inline replies or bubbles.
-            }
-
-            return PendingIntent.getActivity(activity, 0, intent, intentFlagType)
-        }
-
-        override fun getCurrentContentText(player: Player): String {
-            return getTags(player)?.description ?: ""
-        }
-
-
-        override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
-            val url = getTags(player)?.imageUri?.toURL()
-            @Suppress("DEPRECATION")
-            val executor = Executors.newSingleThreadExecutor()
-            executor.execute {
-                val bitmap = BitmapRetriever().execute(url).get()
-
-                Handler(Looper.getMainLooper()).post {
-                    callback.onBitmap(bitmap)
-                }
-          }
-           return null
-        }
-
-
-        private fun getTags(player: Player): MediaTags? {
-            return player.currentMediaItem!!.localConfiguration!!.tag as MediaTags?
-        }
-    }
-
-    private inner class AudioNotificationListener : PlayerNotificationManager.NotificationListener {
-        override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-            this@AudioService.startForeground(notificationId, notification)
-        }
-    }
-
-    private inner class AudioActionReceiver : PlayerNotificationManager.CustomActionReceiver {
-
-        override fun createCustomActions(
-            context: Context,
-            instanceId: Int
-        ): MutableMap<String, NotificationCompat.Action> {
-
-            val intent: Intent = Intent("close").setPackage(context.packageName)
-            val pendingIntent = PendingIntent.getBroadcast(context, instanceId, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-            val closeAction: NotificationCompat.Action = NotificationCompat.Action(
-                    android.R.drawable.ic_notification_clear_all, "close", pendingIntent
-            )
-
-            return mutableMapOf("close" to closeAction)
-        }
-
-        override fun getCustomActions(player: Player): MutableList<String> = mutableListOf("close")
-
-        override fun onCustomAction(player: Player, action: String, intent: Intent) {
-            when (action) {
-                "close" -> {
+        override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
+            when (customCommand.customAction) {
+                REWIND_COMMAND -> session.player.seekBack()
+                FORWARD_COMMAND -> session.player.seekForward()
+                CLOSE_COMMAND -> {
                     destroyPlayer()
                     EventBus.publish(AudioNotificationCloseEvent())
                 }
+                else -> return super.onCustomCommand(session, controller, customCommand, args)
             }
-        }
-    }
-
-    private data class MediaTags(val title: String, val description: String, val imageUri: URI?)
-
-    @Suppress("DEPRECATION")
-    private class BitmapRetriever : AsyncTask<URL, Boolean, Bitmap>() {
-
-        companion object {
-            val cache = mutableMapOf<String, Bitmap>()
-        }
-
-        override fun doInBackground(vararg urls: URL?): Bitmap? {
-            if (urls.isEmpty() || urls[0] == null) return null
-            return try {
-
-                var bitmap = cache[urls[0].toString()]
-                if (bitmap == null) {
-                    bitmap = BitmapFactory.decodeStream(urls[0]!!.openStream())
-                    cache[urls[0].toString()] = bitmap
-                }
-
-                bitmap
-
-            } catch (error: Exception) {
-                System.err.println("Unable to retrieve media image")
-                null
-            }
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
     }
 }

@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import com.brightcove.player.appcompat.BrightcovePlayerFragment
+import com.brightcove.player.display.ExoPlayerVideoDisplayComponent
+import com.brightcove.player.edge.OfflineStoreManager
 import com.brightcove.player.event.Event
 import com.brightcove.player.event.EventType
 import com.brightcove.player.mediacontroller.BrightcoveMediaController
@@ -56,6 +58,9 @@ class BrightcoveVideoPlayerFragment() : BrightcovePlayerFragment() {
         addTouchListenerOnLayout(fragmentView)
 
         baseVideoView = fragmentView.findViewById<BrightcoveExoPlayerVideoView>(R.id.brightcove_video_view)
+
+        // Since 10.x downloaded videos only play when the display component knows the offline store
+        (baseVideoView.videoDisplay as? ExoPlayerVideoDisplayComponent)?.setMediaStore(OfflineStoreManager.getInstance(requireContext()))
 
         this.initMediaController()
 

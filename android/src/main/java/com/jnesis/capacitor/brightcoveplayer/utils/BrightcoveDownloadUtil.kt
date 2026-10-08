@@ -2,6 +2,7 @@ package com.jnesis.capacitor.brightcoveplayer.utils
 
 import android.os.Bundle
 import android.util.Log
+import androidx.core.os.BundleCompat
 import com.brightcove.player.model.MediaFormat
 import com.brightcove.player.offline.MediaDownloadable
 
@@ -21,7 +22,7 @@ object BrightcoveDownloadUtil {
      */
     fun selectMediaFormatTracksAvailable(mediaDownloadable: MediaDownloadable, bundle: Bundle) {
         var didListChange: Boolean
-        val audio: ArrayList<MediaFormat> = bundle.getParcelableArrayList(MediaDownloadable.AUDIO_LANGUAGES)!!
+        val audio: ArrayList<MediaFormat> = BundleCompat.getParcelableArrayList(bundle, MediaDownloadable.AUDIO_LANGUAGES, MediaFormat::class.java)!!
         var indexMain = -1
         val newAudio = ArrayList<MediaFormat>()
 
@@ -69,7 +70,7 @@ object BrightcoveDownloadUtil {
         // As with the alternate audio track selection above, we make an assumption here that the end user has selected the
         // first caption track as the "default" caption language, and the second caption track as the "alternate" (if more than
         // one caption track is present)
-        val captions: ArrayList<MediaFormat> = bundle.getParcelableArrayList(MediaDownloadable.CAPTIONS)!!
+        val captions: ArrayList<MediaFormat> = BundleCompat.getParcelableArrayList(bundle, MediaDownloadable.CAPTIONS, MediaFormat::class.java)!!
         Log.v(TAG, "Captions array size: " + captions.size)
         if (captions.size > 0) {
             val newCaptions = ArrayList<MediaFormat>()

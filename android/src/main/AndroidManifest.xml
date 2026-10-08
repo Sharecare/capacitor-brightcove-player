@@ -2,11 +2,24 @@
     >
 
     <application>
-        <service android:name="com.jnesis.capacitor.brightcoveplayer.service.AudioService" android:enabled="true" />
+        <service
+            android:name="com.jnesis.capacitor.brightcoveplayer.service.AudioService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+        <!-- Brightcove's downloader starts this service in the foreground; Android 14+ targets need a declared type -->
+        <service
+            android:name="com.liulishuo.filedownloader.services.FileDownloadService$SharedMainProcessService"
+            android:foregroundServiceType="dataSync" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
 </manifest>
-  

@@ -1,6 +1,6 @@
 package com.jnesis.capacitor.brightcoveplayer.model
 
-import com.google.android.exoplayer2.PlaybackException
+import androidx.media3.common.PlaybackException
 
 data class AudioErrorDetails(
     val message: String,
