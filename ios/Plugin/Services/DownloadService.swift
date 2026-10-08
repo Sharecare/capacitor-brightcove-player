@@ -152,7 +152,7 @@ class DownloadService: NSObject {
         }
         
 
-        self.setup!.playbackService.findVideo(withVideoID: fileId, parameters: nil) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
+        self.setup!.findVideo(id: fileId) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
             if(error != nil) {
                 return completion(error)
             }

@@ -43,7 +43,7 @@ class MediaService {
         let group = DispatchGroup()
         group.enter()
 
-        setup.playbackService.findVideo(withVideoID: fileId, parameters: nil)  { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
+        setup.findVideo(id: fileId) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
             if(error != nil) {
                 mediaError = error!
             } else if let mediaFound = video {

@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target  = '15.0'
   s.dependency 'Capacitor'
   s.static_framework = true
-  s.dependency 'Brightcove-Player-Core-static/XCFramework', '6.12.7'
+  s.dependency 'Brightcove-Player-Core-static/XCFramework', '6.13.3'
   s.swift_version = '5.1'
 end

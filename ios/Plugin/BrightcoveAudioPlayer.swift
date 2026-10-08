@@ -142,7 +142,7 @@ public class BrightcoveAudioPlayer:NSObject {
             return completion(CustomError(PluginError.NO_INTERNET_CONNECTION,"NetworkService.checkIfOnline: Need internet connection to do this action"))
         }
 
-        setup.playbackService.findVideo(withVideoID: self.fileId, parameters: nil) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
+        setup.findVideo(id: self.fileId) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
             if(error != nil) {
                 return completion(error)
             } else if (video == nil) {

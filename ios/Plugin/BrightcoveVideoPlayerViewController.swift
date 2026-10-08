@@ -152,7 +152,7 @@ public class BrightcoveVideoPlayerViewController: UIViewController {
         }
         
         // Stream online media
-        self.setup.playbackService.findVideo(withVideoID: self.videoId, parameters: nil) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
+        self.setup.findVideo(id: self.videoId) { (video: BCOVVideo?, jsonResponse: [AnyHashable: Any]?, error: Error?) -> Void in
             if(error != nil) {
                 return completion(error)
             }
